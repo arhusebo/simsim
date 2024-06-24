@@ -28,7 +28,7 @@ Experiment 'fibonacci' terminated successfully
 Fibonacci sequence: 0, 1, 1, 2, 3, 5, 8, 13, 21, 34, 55, 89, 144, 233, 377, 610, 987, 1597, 2584, 4181, 6765, 10946
 ```
 
-However, `IPython` is highly reccomended for developing and debugging as it provides convenient features like autoreloading and removing the need to type function parentheses:
+However, `IPython` is highly recommended for developing and debugging as it provides convenient features like autoreloading and removing the need to type function parentheses:
 ```
 ipython
 ...
@@ -40,11 +40,11 @@ In [3] autocall 3
 
 In [4] from example.basic import *
 
-In [5] basic.fibonacci
--------> basic.fibonacci()
+In [5] fibonacci
+-------> fibonacci()
 Running experiment 'fibonacci'
 Experiment 'fibonacci' terminated successfully
 
-In [6] basic.present_fibonacci
--------> basic.present_fibonacci()
+In [6] present_fibonacci
+-------> present_fibonacci()
 Fibonacci sequence: 0, 1, 1, 2, 3, 5, 8, 13, 21, 34, 55, 89, 144, 233, 377, 610, 987, 1597, 2584, 4181, 6765, 10946
