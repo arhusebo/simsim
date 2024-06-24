@@ -36,7 +36,7 @@ In [1]: %load_ext autoreload
 
 In [2]: %autoreload 2
 
-In [3] autocall 3
+In [3] %autocall 2
 
 In [4] from example.basic import *
 

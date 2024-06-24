@@ -22,7 +22,7 @@ def experiment(path: str):
             results = func()
 
             if not os.path.exists(path):
-                os.mkdir(path)
+                os.makedirs(path)
 
             with open(_get_path(path, name), "wb") as f:
                 pickle.dump(results, f)
