@@ -2,6 +2,7 @@ import os
 import pickle
 import functools
 import logging
+import time
 
 
 logger = logging.getLogger("__main__")
@@ -19,7 +20,9 @@ def experiment(path: str):
         def wrapper():
             name = func.__name__
             logger.info(f"Running experiment '{name}'")
+            time0 = time.process_time_ns()
             results = func()
+            time_total = time.process_time_ns() - time0
 
             if not os.path.exists(path):
                 os.makedirs(path)
@@ -27,7 +30,7 @@ def experiment(path: str):
             with open(_get_path(path, name), "wb") as f:
                 pickle.dump(results, f)
 
-            logger.info(f"Experiment '{name}' terminated successfully")
+            logger.info(f"Experiment '{name}' terminated successfully in {time_total/1.e9} s")
         
         return wrapper
     return decorator_experiment
