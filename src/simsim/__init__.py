@@ -20,9 +20,9 @@ def experiment(path: str):
         def wrapper():
             name = func.__name__
             logger.info(f"Running experiment '{name}'")
-            time0 = time.process_time_ns()
+            time0 = time.time_ns()
             results = func()
-            time_total = time.process_time_ns() - time0
+            time_total = time.time_ns() - time0
 
             if not os.path.exists(path):
                 os.makedirs(path)
