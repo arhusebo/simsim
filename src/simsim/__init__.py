@@ -51,3 +51,8 @@ def presentation(*experiments):
         
         return wrapper
     return decorator_presentation
+
+
+def results(ex):
+    with open(_registry[ex.__name__], "rb") as f:
+        return pickle.load(f)
