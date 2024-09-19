@@ -1,4 +1,5 @@
 import math
+from typing import TypedDict
 import simsim
 
 
@@ -19,6 +20,25 @@ def primes() -> list[float]:
     return prm
 
 
+class Rectangle(TypedDict):
+    width: float
+    height: float
+    area: float
+
+
+@simsim.experiment(path="./experiments/", json=True)
+def rectangle_area() -> dict:
+    rectangles: list[Rectangle] = []
+    for width in range(2, 11, 2):
+        for height in range(2, 11, 2):
+            rectangles.append({
+                "width": width,
+                "height": height,
+                "area": width*height,
+            })
+    return rectangles
+
+
 @simsim.presentation(fibonacci)
 def present_fibonacci(x):
     print("Fibonacci sequence: "+", ".join(str(val) for val in x))
@@ -36,3 +56,11 @@ def alt_presentation(fib_results: list[float] = simsim.results(fibonacci),
           ", ".join(str(val) for val in fib_results))
     print("Alternative presentation of the prime sequence: "+
           ", ".join(str(val) for val in prm_results))
+
+
+def present_rectangle_areas(
+        rectangles: list[Rectangle] = simsim.results(rectangle_area)):
+    for rectangle in rectangles:
+        print(f"Rectangle with width {rectangle['width']} "+
+              f"and height {rectangle['height']} "+
+              f"has an area of {rectangle['area']}")

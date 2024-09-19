@@ -1,9 +1,9 @@
 import pathlib
 import pickle
+import json
 import functools
 import logging
 import time
-import collections
 
 
 logger = logging.getLogger("__main__")
@@ -13,12 +13,40 @@ logging.basicConfig(level=logging.INFO)
 _registry = {}
 
 
-def experiment(path: str):
+def _load_data(ex):
+    path = _registry[ex.__name__]
+    match path.suffix:
+        case ".pkl":
+            with open(path, "rb") as f:
+                return pickle.load(f)
+        case ".json":
+            with open(path, "r") as f:
+                return json.load(f)
+        case _:
+            raise ValueError("unrecognized experiment filetype")
+ 
+
+def _write_data(ex, results):
+    path = _registry[ex.__name__]
+    match path.suffix:
+        case ".pkl":
+            with open(path, "wb") as f:
+                return pickle.dump(results, f)
+        case ".json":
+            with open(path, "w") as f:
+                return json.dump(results, f)
+        case _:
+            raise ValueError("unrecognized experiment filetype")
+ 
+
+
+def experiment(path: str, json=False):
     def decorator_experiment(func):
 
         path_ = pathlib.Path(path)
         name = func.__name__
-        fp = (path_/name).with_suffix(".pkl")
+        fp = path_/name
+        fp = fp.with_suffix(".json") if json else fp.with_suffix(".pkl")
         _registry[name] = fp 
 
         @functools.wraps(func)
@@ -29,8 +57,7 @@ def experiment(path: str):
             time_total = time.time_ns() - time0
 
             path_.mkdir(exist_ok=True)
-            with open(fp, "wb") as f:
-                pickle.dump(results, f)
+            _write_data(func, results)
 
             logger.info(f"Experiment '{name}' terminated successfully in {time_total/1.e9} s")
         
@@ -44,9 +71,7 @@ def presentation(*experiments):
         def wrapper():
             results = []
             for ex in experiments:
-                with open(_registry[ex.__name__], "rb") as f:
-                    res = pickle.load(f)
-                    results.append(res)
+                results.append(_load_data(ex))
             presentation_func(results if len(results) > 1 else results[0])
         
         return wrapper
@@ -54,5 +79,13 @@ def presentation(*experiments):
 
 
 def results(ex):
-    with open(_registry[ex.__name__], "rb") as f:
-        return pickle.load(f)
+    # TODO: This function should not be called before the presentation 
+    # function is called, after which this function should be called
+    # after every additional presentation function call.
+    try:
+        return _load_data(ex)
+    except FileNotFoundError:
+        logger.warning(
+            f"Experiment {ex.__name__} has not yet been run. "+
+            "To access the results, the experiment must be run and the "+
+            "interpreter restarted.")
