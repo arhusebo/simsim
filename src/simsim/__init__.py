@@ -1,4 +1,4 @@
-import os
+import pathlib
 import pickle
 import functools
 import logging
@@ -10,8 +10,9 @@ logging.basicConfig(level=logging.INFO)
 
 
 def _get_path(path: str, name: str):
+    path_ = pathlib.Path(path)
     fname = f"{name}.pkl"
-    return os.path.join(path, fname)
+    return path_.joinpath(fname)
 
 
 def experiment(path: str):
@@ -24,8 +25,8 @@ def experiment(path: str):
             results = func()
             time_total = time.time_ns() - time0
 
-            if not os.path.exists(path):
-                os.makedirs(path)
+            path_ = pathlib.Path(path)
+            path_.mkdir(exist_ok=True)
 
             with open(_get_path(path, name), "wb") as f:
                 pickle.dump(results, f)
