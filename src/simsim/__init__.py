@@ -55,11 +55,14 @@ def experiment(path: str, json=False):
             time0 = time.time_ns()
             results = func()
             time_total = time.time_ns() - time0
-
-            path_.mkdir(exist_ok=True)
-            _write_data(func, results)
-
             logger.info(f"Experiment '{name}' terminated successfully in {time_total/1.e9} s")
+
+            if results is None:
+                logger.info(f"No results were returned")
+            else:
+                path_.mkdir(exist_ok=True)
+                _write_data(func, results)
+                logger.info(f"Results were saved to \"{fp}\"")
         
         return wrapper
     return decorator_experiment
