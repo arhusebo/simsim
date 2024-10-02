@@ -20,7 +20,7 @@ def _load_data(ex):
             with open(path, "rb") as f:
                 return pickle.load(f)
         case ".json":
-            with open(path, "r") as f:
+            with open(path, "r", encoding="utf-8") as f:
                 return json.load(f)
         case _:
             raise ValueError("unrecognized experiment filetype")
@@ -33,8 +33,9 @@ def _write_data(ex, results):
             with open(path, "wb") as f:
                 return pickle.dump(results, f)
         case ".json":
-            with open(path, "w") as f:
-                return json.dump(results, f)
+            with open(path, "w", encoding="utf-8", newline="") as f:
+                return json.dump(results, f, ensure_ascii=False,
+                                 indent=None, separators=(",", ":"))
         case _:
             raise ValueError("unrecognized experiment filetype")
  
