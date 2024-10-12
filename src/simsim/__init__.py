@@ -61,7 +61,7 @@ def experiment(path: str, json=False):
             if results is None:
                 logger.info(f"No results were returned")
             else:
-                path_.mkdir(exist_ok=True)
+                path_.mkdir(parents=True, exist_ok=True)
                 _write_data(func, results)
                 logger.info(f"Results were saved to \"{fp}\"")
         
