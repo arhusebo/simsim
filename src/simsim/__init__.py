@@ -4,6 +4,7 @@ import json
 import functools
 import logging
 import time
+import inspect
 
 
 logger = logging.getLogger("__main__")
@@ -38,7 +39,53 @@ def _write_data(ex, results):
                                  indent=None, separators=(",", ":"))
         case _:
             raise ValueError("unrecognized experiment filetype")
- 
+
+
+class SetOnce:
+
+    def __set_name__(self, owner, name):
+        self.public_name = name
+        self.private_name = '_' + name
+        self.isset = False
+
+    def __set__(self, obj, value):
+        if self.isset:
+            raise AttributeError("this attribute may be set only once")
+        setattr(obj, self.private_name, value)
+        self.isset = True
+        obj.logger.info(f"`{self.public_name}` was set to {value}")
+    
+    def __get__(self, obj, objtype=None):
+        attr = getattr(obj, self.private_name)
+        if not attr:
+            raise AttributeError("attribute {self.name} not set!")
+        return attr
+    
+
+class ExperimentStatus:
+
+    max_progress = SetOnce()
+
+    def __init__(self, logger, time_start):
+        self.logger = logger
+        self._progress = None
+        self._time0 = time_start
+
+    @property
+    def progress(self):
+        return self._progress
+    
+    @progress.setter
+    def progress(self, val):
+        self._progress = val
+        frac = self._progress/self.max_progress
+        msg = f"{self._progress}/{self.max_progress} ({round(100*frac)}%)"
+        time1 = time.time_ns()
+        elapsed = time1-self._time0
+        step_time = elapsed/val
+        est_remain = step_time*(self.max_progress - val)
+        msg += f" - {round(est_remain*1e-9)}s remain"
+        self.logger.info(msg)
 
 
 def experiment(path: str, json=False):
@@ -48,13 +95,20 @@ def experiment(path: str, json=False):
         name = func.__name__
         fp = path_/name
         fp = fp.with_suffix(".json") if json else fp.with_suffix(".pkl")
-        _registry[name] = fp 
+        _registry[name] = fp
 
         @functools.wraps(func)
         def wrapper():
             logger.info(f"Running experiment '{name}'")
             time0 = time.time_ns()
-            results = func()
+            fargs = inspect.getfullargspec(func)[0]
+            match len(fargs):
+                case 0:
+                    results = func()
+                case 1:
+                    results = func(ExperimentStatus(logger, time0))
+                case _:
+                    raise ValueError("invalid number of arguments for experiment function")
             time_total = time.time_ns() - time0
             logger.info(f"Experiment '{name}' terminated successfully in {time_total/1.e9} s")
 
